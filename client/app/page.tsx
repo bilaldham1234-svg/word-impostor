@@ -1,12 +1,12 @@
 "use client";
 
-import { io } from "socket.io-client";
 import { useEffect, useRef, useState } from "react";
+import { io } from "socket.io-client";
 
 export default function Home() {
+
   const [name, setName] = useState("");
-  const [roomId, setRoomId] = useState<string | null>(null);
-const [joinCode, setJoinCode] = useState("");
+  const [joinCode, setJoinCode] = useState("");
   const socketRef = useRef<any>(null);
 
   useEffect(() => {
@@ -14,64 +14,75 @@ const [joinCode, setJoinCode] = useState("");
   }, []);
 
   const createRoom = () => {
+
     const id = Math.random().toString(36).substring(2, 7);
 
     socketRef.current.emit("createRoom", id);
 
     socketRef.current.on("roomCreated", (room: string) => {
-      setRoomId(room);
-    });
-  };
-const joinRoom = () => {
-  socketRef.current.emit("joinRoom", {
-    roomId: joinCode,
-    name,
-  });
 
-  alert("Joined Room: " + joinCode);
-};
+      window.location.href = `/room/${room}`;
+
+    });
+
+  };
+
+  const joinRoom = () => {
+
+    socketRef.current.emit("joinRoom", {
+      roomId: joinCode,
+      name,
+    });
+
+    socketRef.current.on("joinedRoom", (roomId: string) => {
+
+      window.location.href = `/room/${roomId}`;
+
+    });
+
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-black via-gray-900 to-black text-white">
-      
-      <div className="w-full max-w-md p-6 rounded-2xl bg-gray-800/60 backdrop-blur-lg shadow-2xl border border-gray-700">
-        
-        <h1 className="text-3xl font-bold text-center mb-6">
+    <main className="min-h-screen flex items-center justify-center bg-[#0f172a]">
+
+      <div className="bg-[#1e293b] p-8 rounded-2xl shadow-2xl w-[350px] flex flex-col gap-4">
+
+        <h1 className="text-white text-3xl font-bold text-center">
           🎮 Word Impostor
         </h1>
 
         <input
-          className="w-full p-3 mb-4 rounded bg-gray-900 text-white outline-none border border-gray-700 focus:border-green-500"
+          type="text"
           placeholder="Enter your name"
           value={name}
           onChange={(e) => setName(e.target.value)}
+          className="p-3 rounded bg-[#0f172a] text-white outline-none"
         />
-<input
-  className="w-full p-3 mb-4 rounded bg-gray-900 text-white outline-none border border-gray-700 focus:border-blue-500"
-  placeholder="Enter room code"
-  value={joinCode}
-  onChange={(e) => setJoinCode(e.target.value)}
-/>
-        {roomId && (
-          <div className="text-center mb-4 text-green-400 font-semibold">
-            Room Code: <span className="text-white">{roomId}</span>
-          </div>
-        )}
+
+        <input
+          type="text"
+          placeholder="Enter room code"
+          value={joinCode}
+          onChange={(e) => setJoinCode(e.target.value)}
+          className="p-3 rounded bg-[#0f172a] text-white outline-none"
+        />
 
         <button
           onClick={createRoom}
-          className="w-full mb-3 bg-green-500 hover:bg-green-600 transition-all py-2 rounded font-semibold"
+          className="bg-green-500 hover:bg-green-600 text-white p-3 rounded font-bold"
         >
           Create Room
         </button>
 
         <button
           onClick={joinRoom}
-          className="w-full bg-blue-500 hover:bg-blue-600 transition-all py-2 rounded font-semibold"
+          className="bg-blue-500 hover:bg-blue-600 text-white p-3 rounded font-bold"
         >
           Join Room
         </button>
 
       </div>
-    </div>
+
+    </main>
   );
-} 
+}
