@@ -10,7 +10,7 @@ const [joinCode, setJoinCode] = useState("");
   const socketRef = useRef<any>(null);
 
   useEffect(() => {
-    socketRef.current = io("http://localhost:3001");
+    socketRef.current = io("https://word-impostor-1.onrender.com");
   }, []);
 
   const createRoom = () => {
