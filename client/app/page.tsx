@@ -27,20 +27,16 @@ export default function Home() {
 
   };
 
-  const joinRoom = () => {
+ const joinRoom = () => {
+  socketRef.current.emit("joinRoom", {
+    roomId: joinCode,
+    name,
+  });
 
-    socketRef.current.emit("joinRoom", {
-      roomId: joinCode,
-      name,
-    });
+  window.location.href = `/room/${joinCode}`;
+};
 
-    socketRef.current.on("joinedRoom", (roomId: string) => {
-
-      window.location.href = `/room/${roomId}`;
-
-    });
-
-  };
+  
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-[#0f172a]">
