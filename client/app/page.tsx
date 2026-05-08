@@ -14,19 +14,19 @@ export default function Home() {
   }, []);
 
   const createRoom = () => {
+  const id = Math.random().toString(36).substring(2, 7);
 
-    const id = Math.random().toString(36).substring(2, 7);
+  localStorage.setItem("playerName", name);
 
-    socketRef.current.emit("createRoom", id);
+  socketRef.current.emit("createRoom", {
+    roomId: id,
+    name,
+  });
 
-    socketRef.current.on("roomCreated", (room: string) => {
-
-      window.location.href = `/room/${room}`;
-
-    });
-
-  };
-
+  socketRef.current.on("roomCreated", (room: string) => {
+    window.location.href = `/room/${room}`;
+  });
+};
  const joinRoom = () => {
   localStorage.setItem("playerName", name);
   socketRef.current.emit("joinRoom", {

@@ -7,8 +7,8 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: "*"
-  }
+    origin: "*",
+  },
 });
 
 const rooms = {};
@@ -17,40 +17,64 @@ io.on("connection", (socket) => {
   console.log("User connected:", socket.id);
 
   // إنشاء غرفة
-  socket.on("createRoom", (roomId) => {
+  socket.on("createRoom", ({ roomId, name }) => {
     rooms[roomId] = {
-      players: []
+      players: [
+        {
+          id: socket.id,
+          name,
+        },
+      ],
     };
 
     socket.join(roomId);
+
+    io.to(roomId).emit("roomUpdate", rooms[roomId]);
+
     socket.emit("roomCreated", roomId);
-io.to(roomId).emit("roomUpdate", rooms[roomId]);
+
     console.log("Room created:", roomId);
   });
 
   // دخول غرفة
-socket.on("joinRoom", ({ roomId, name }) => {
-  if (!rooms[roomId]) {
-    rooms[roomId] = {
-      players: [],
-    };
-  }
+  socket.on("joinRoom", ({ roomId, name }) => {
+    if (!rooms[roomId]) {
+      rooms[roomId] = {
+        players: [],
+      };
+    }
 
-  rooms[roomId].players.push({
-    id: socket.id,
-    name,
+    // منع التكرار
+    const alreadyExists = rooms[roomId].players.find(
+      (player) => player.id === socket.id
+    );
+
+    if (!alreadyExists) {
+      rooms[roomId].players.push({
+        id: socket.id,
+        name,
+      });
+    }
+
+    socket.join(roomId);
+
+    io.to(roomId).emit("roomUpdate", rooms[roomId]);
+
+    socket.emit("joinedRoom", roomId);
+
+    console.log(name, "joined room", roomId);
   });
 
-  socket.join(roomId);
-
-  io.to(roomId).emit("roomUpdate", rooms[roomId]);
-
-  console.log(name, "joined room", roomId);
-
-  socket.emit("joinedRoom", roomId);
-});
-  // قطع الاتصال
+  // خروج لاعب
   socket.on("disconnect", () => {
+    for (const roomId in rooms) {
+      rooms[roomId].players = rooms[roomId].players.filter(
+        (player) => player.id !== socket.id
+      );
+
+      io.to(roomId).emit("roomUpdate", rooms[roomId]);
+    }
+
     console.log("User disconnected:", socket.id);
   });
 });
