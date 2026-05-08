@@ -30,15 +30,15 @@ io.to(roomId).emit("roomUpdate", rooms[roomId]);
 
   // دخول غرفة
 socket.on("joinRoom", ({ roomId, name }) => {
-
   if (!rooms[roomId]) {
-    socket.emit("error", "Room does not exist");
-    return;
+    rooms[roomId] = {
+      players: [],
+    };
   }
 
   rooms[roomId].players.push({
     id: socket.id,
-    name
+    name,
   });
 
   socket.join(roomId);
@@ -48,7 +48,6 @@ socket.on("joinRoom", ({ roomId, name }) => {
   console.log(name, "joined room", roomId);
 
   socket.emit("joinedRoom", roomId);
-
 });
   // قطع الاتصال
   socket.on("disconnect", () => {
