@@ -24,7 +24,7 @@ io.on("connection", (socket) => {
 
     socket.join(roomId);
     socket.emit("roomCreated", roomId);
-
+io.to(roomId).emit("roomUpdate", rooms[roomId]);
     console.log("Room created:", roomId);
   });
 
