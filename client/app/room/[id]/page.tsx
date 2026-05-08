@@ -17,7 +17,7 @@ export default function RoomPage() {
       localStorage.getItem("playerName") || "Player";
 
     socket.emit("joinRoom", {
-      roomId: roomId,
+      roomId,
       name: playerName,
     });
 
@@ -41,13 +41,14 @@ export default function RoomPage() {
   return (
     <main className="min-h-screen flex items-center justify-center bg-black text-white">
       <div className="text-center">
+
         <h1 className="text-4xl font-bold mb-4">
           Waiting Room
         </h1>
 
-        <p className="text-2xl mb-4">
+        <h2 className="text-2xl font-bold mb-2">
           Room Code: {roomId}
-        </p>
+        </h2>
 
         <h2 className="text-2xl font-bold mb-2">
           Players:
@@ -77,6 +78,7 @@ export default function RoomPage() {
             🚀 Start Game
           </button>
         )}
+
       </div>
     </main>
   );
