@@ -78,7 +78,7 @@ export default function RoomPage() {
               className="bg-[#111] border border-purple-500 rounded-2xl p-5 shadow-[0_0_20px_#581c87]"
             >
               <img
-  src={`/Screenshot 2026-05-08 05342${3 + index * 14}.png`}
+  src={`/${index + 1}.png`}
   className="w-20 h-20 mx-auto mb-3 rounded-xl"
 />
 
