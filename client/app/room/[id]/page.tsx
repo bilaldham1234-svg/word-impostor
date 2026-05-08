@@ -1,81 +1,81 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
-import { io } from "socket.io-client";
-
-const socket = io("https://word-impostor-server.onrender.com");
+import { useParams, useRouter } from "next/navigation";
 
 export default function RoomPage() {
   const params = useParams();
-  const roomId = params.id as string;
+  const router = useRouter();
 
-  const [players, setPlayers] = useState<any[]>([]);
+  const roomId = params.id;
 
-  useEffect(() => {
-    const playerName =
-      localStorage.getItem("playerName") || "Player";
+  const players = [
+    { name: "Bilal" },
+    { name: "Sarah" },
+    { name: "Omar" },
+    { name: "Maya" },
+  ];
 
-    socket.emit("joinRoom", {
-      roomId,
-      name: playerName,
-    });
-
-    socket.on("roomUpdate", (room) => {
-      setPlayers(room.players);
-    });
-
-    socket.on("gameStarted", () => {
-      window.location.href = `/game/${roomId}`;
-    });
-
-    return () => {
-      socket.disconnect();
-    };
-  }, [roomId]);
-
-  const isOwner =
-    players.length > 0 &&
-    players[0]?.name === localStorage.getItem("playerName");
+  const isOwner = true;
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-black text-white">
-      <div className="text-center">
+    <main className="min-h-screen bg-black text-white flex items-center justify-center overflow-hidden relative">
 
-        <h1 className="text-4xl font-bold mb-4">
-          Waiting Room
+      {/* Background Glow */}
+      <div className="absolute w-[500px] h-[500px] bg-purple-700 opacity-20 blur-[120px] rounded-full top-[-100px]" />
+
+      <div className="z-10 w-full max-w-4xl px-6 text-center">
+
+        {/* Title */}
+        <h1 className="text-6xl font-black tracking-wider">
+          WORD
         </h1>
 
-        <h2 className="text-2xl font-bold mb-2">
-          Room Code: {roomId}
+        <h2 className="text-7xl font-black text-purple-500 drop-shadow-[0_0_25px_#a855f7] mb-4">
+          IMPOSTOR
         </h2>
 
-        <h2 className="text-2xl font-bold mb-2">
-          Players:
-        </h2>
+        <p className="text-gray-400 mb-10 text-lg">
+          Waiting for players...
+        </p>
 
-        {players.map((player, index) => (
-          <p
-            key={index}
-            className={
-              index === 0
-                ? "text-yellow-400 font-bold text-xl"
-                : "text-green-400 text-lg"
-            }
-          >
-            {index === 0 ? "👑 " : "🟢 "}
-            {player.name}
-          </p>
-        ))}
+        {/* Room Code */}
+        <div className="max-w-md mx-auto border border-purple-500 rounded-2xl p-6 bg-[#111] shadow-[0_0_30px_#7e22ce] mb-10">
+          <p className="text-gray-400 mb-2">ROOM CODE</p>
 
+          <h3 className="text-5xl font-bold tracking-[10px] text-purple-400">
+            {roomId}
+          </h3>
+        </div>
+
+        {/* Players */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mb-10">
+
+          {players.map((player, index) => (
+            <div
+              key={index}
+              className="bg-[#111] border border-purple-500 rounded-2xl p-5 shadow-[0_0_20px_#581c87]"
+            >
+              <div className="text-5xl mb-3">🕵️</div>
+
+              <h3 className="font-bold text-lg">
+                {player.name}
+              </h3>
+
+              <p className="text-green-400 text-sm mt-2">
+                ● Ready
+              </p>
+            </div>
+          ))}
+
+        </div>
+
+        {/* Start Button */}
         {isOwner && (
           <button
-            onClick={() => {
-              socket.emit("startGame", roomId);
-            }}
-            className="mt-6 bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-3 px-6 rounded-xl"
+            onClick={() => router.push(`/game/${roomId}`)}
+            className="px-16 py-5 rounded-2xl bg-purple-600 hover:bg-purple-500 transition-all duration-300 text-2xl font-bold shadow-[0_0_30px_#9333ea]"
           >
-            🚀 Start Game
+            ▶ START GAME
           </button>
         )}
 
