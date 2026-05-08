@@ -33,6 +33,7 @@ export default function RoomPage() {
   return (
     <main className="min-h-screen flex items-center justify-center bg-black text-white">
       <div className="text-center">
+
         <h1 className="text-4xl font-bold mb-4">
           Waiting Room
         </h1>
@@ -46,10 +47,19 @@ export default function RoomPage() {
         </h2>
 
         {players.map((player, index) => (
-          <p key={index} className="text-xl">
+          <p
+            key={index}
+            className={
+              index === 0
+                ? "text-yellow-400 font-bold text-xl"
+                : "text-green-400 text-lg"
+            }
+          >
+            {index === 0 ? "👑 " : "🟢 "}
             {player.name}
           </p>
         ))}
+
       </div>
     </main>
   );
