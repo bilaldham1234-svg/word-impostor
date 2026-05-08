@@ -13,10 +13,12 @@ export default function RoomPage({
   useEffect(() => {
     const socket = io("https://word-impostor-server.onrender.com");
 
-    socket.emit("joinRoom", {
-      roomId: params.id,
-      name: "Player",
-    });
+    const playerName = localStorage.getItem("playerName") || "Player";
+
+socket.emit("joinRoom", {
+  roomId: params.id,
+  name: playerName,
+});
 
     socket.on("roomUpdate", (room) => {
       setPlayers(room.players);

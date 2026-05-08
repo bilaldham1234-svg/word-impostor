@@ -28,6 +28,7 @@ export default function Home() {
   };
 
  const joinRoom = () => {
+  localStorage.setItem("playerName", name);
   socketRef.current.emit("joinRoom", {
     roomId: joinCode,
     name,
