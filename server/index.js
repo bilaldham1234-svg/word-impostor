@@ -66,9 +66,13 @@ socket.on("createRoom", ({ roomId, name }) => {
 
     console.log(name, "joined room", roomId);
   });
+socket.on("startGame", (roomId) => {
+  io.to(roomId).emit("gameStarted");
+});
 
+socket.on("disconnect", () => {
   // خروج لاعب
-  socket.on("disconnect", () => {
+  
     for (const roomId in rooms) {
       rooms[roomId].players = rooms[roomId].players.filter(
         (player) => player.id !== socket.id

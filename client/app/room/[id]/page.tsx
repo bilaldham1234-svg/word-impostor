@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { io } from "socket.io-client";
 
+const socket = io("https://word-impostor-server.onrender.com");
+
 export default function RoomPage() {
   const params = useParams();
   const roomId = params.id as string;
@@ -11,8 +13,6 @@ export default function RoomPage() {
   const [players, setPlayers] = useState<any[]>([]);
 
   useEffect(() => {
-    const socket = io("https://word-impostor-server.onrender.com");
-
     const playerName =
       localStorage.getItem("playerName") || "Player";
 
@@ -25,17 +25,22 @@ export default function RoomPage() {
       setPlayers(room.players);
     });
 
+    socket.on("gameStarted", () => {
+      window.location.href = `/game/${roomId}`;
+    });
+
     return () => {
       socket.disconnect();
     };
   }, [roomId]);
-const isOwner =
-  players.length > 0 &&
-  players[0]?.name === localStorage.getItem("playerName");
+
+  const isOwner =
+    players.length > 0 &&
+    players[0]?.name === localStorage.getItem("playerName");
+
   return (
     <main className="min-h-screen flex items-center justify-center bg-black text-white">
       <div className="text-center">
-
         <h1 className="text-4xl font-bold mb-4">
           Waiting Room
         </h1>
@@ -61,13 +66,17 @@ const isOwner =
             {player.name}
           </p>
         ))}
-{isOwner && (
-  <button
-    className="mt-6 bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-3 px-6 rounded-xl"
-  >
-    🚀 Start Game
-  </button>
-)}
+
+        {isOwner && (
+          <button
+            onClick={() => {
+              socket.emit("startGame", roomId);
+            }}
+            className="mt-6 bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-3 px-6 rounded-xl"
+          >
+            🚀 Start Game
+          </button>
+        )}
       </div>
     </main>
   );
