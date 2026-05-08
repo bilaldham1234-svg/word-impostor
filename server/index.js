@@ -17,24 +17,26 @@ io.on("connection", (socket) => {
   console.log("User connected:", socket.id);
 
   // إنشاء غرفة
-  socket.on("createRoom", ({ roomId, name }) => {
-    rooms[roomId] = {
-      players: [
-        {
-          id: socket.id,
-          name,
-        },
-      ],
-    };
+socket.on("createRoom", ({ roomId, name }) => {
 
-    socket.join(roomId);
+  rooms[roomId] = {
+    players: [
+      {
+        id: socket.id,
+        name,
+      },
+    ],
+  };
 
-    io.to(roomId).emit("roomUpdate", rooms[roomId]);
+  socket.join(roomId);
 
-    socket.emit("roomCreated", roomId);
+  io.to(roomId).emit("roomUpdate", rooms[roomId]);
 
-    console.log("Room created:", roomId);
-  });
+  socket.emit("roomCreated", roomId);
+
+  console.log("Room created:", roomId);
+
+});
 
   // دخول غرفة
   socket.on("joinRoom", ({ roomId, name }) => {
