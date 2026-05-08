@@ -1,22 +1,23 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import { io } from "socket.io-client";
 
-export default function RoomPage({
-  params,
-}: {
-  params: { id: string };
-}) {
+export default function RoomPage() {
+  const params = useParams();
+  const roomId = params.id as string;
+
   const [players, setPlayers] = useState<any[]>([]);
 
   useEffect(() => {
     const socket = io("https://word-impostor-server.onrender.com");
 
-    const playerName = localStorage.getItem("playerName") || "Player";
+    const playerName =
+      localStorage.getItem("playerName") || "Player";
 
     socket.emit("joinRoom", {
-      roomId: params.id,
+      roomId: roomId,
       name: playerName,
     });
 
@@ -27,7 +28,7 @@ export default function RoomPage({
     return () => {
       socket.disconnect();
     };
-  }, [params.id]);
+  }, [roomId]);
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-black text-white">
@@ -37,7 +38,7 @@ export default function RoomPage({
         </h1>
 
         <p className="text-2xl mb-4">
-          Room Code: {params.id}
+          Room Code: {roomId}
         </p>
 
         <h2 className="text-2xl font-bold mb-2">
