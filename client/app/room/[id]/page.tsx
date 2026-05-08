@@ -29,7 +29,9 @@ export default function RoomPage() {
       socket.disconnect();
     };
   }, [roomId]);
-
+const isOwner =
+  players.length > 0 &&
+  players[0]?.name === localStorage.getItem("playerName");
   return (
     <main className="min-h-screen flex items-center justify-center bg-black text-white">
       <div className="text-center">
@@ -59,7 +61,13 @@ export default function RoomPage() {
             {player.name}
           </p>
         ))}
-
+{isOwner && (
+  <button
+    className="mt-6 bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-3 px-6 rounded-xl"
+  >
+    🚀 Start Game
+  </button>
+)}
       </div>
     </main>
   );
