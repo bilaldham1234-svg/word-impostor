@@ -15,10 +15,10 @@ export default function RoomPage({
 
     const playerName = localStorage.getItem("playerName") || "Player";
 
-socket.emit("joinRoom", {
-  roomId: params.id,
-  name: playerName,
-});
+    socket.emit("joinRoom", {
+      roomId: params.id,
+      name: playerName,
+    });
 
     socket.on("roomUpdate", (room) => {
       setPlayers(room.players);
@@ -27,7 +27,7 @@ socket.emit("joinRoom", {
     return () => {
       socket.disconnect();
     };
-  }, []);
+  }, [params.id]);
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-black text-white">
@@ -36,19 +36,19 @@ socket.emit("joinRoom", {
           Waiting Room
         </h1>
 
-        <p className="text-2xl mb-6">
+        <p className="text-2xl mb-4">
           Room Code: {params.id}
         </p>
 
-        <div>
-          <h2 className="text-2xl mb-2">Players:</h2>
+        <h2 className="text-2xl font-bold mb-2">
+          Players:
+        </h2>
 
-          {players.map((player, index) => (
-            <p key={index} className="text-xl">
-              {player.name}
-            </p>
-          ))}
-        </div>
+        {players.map((player, index) => (
+          <p key={index} className="text-xl">
+            {player.name}
+          </p>
+        ))}
       </div>
     </main>
   );
