@@ -71,7 +71,7 @@ export default function RoomPage() {
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mb-10">
-
+{JSON.stringify(players)}
           {players.map((player: any, index: number) => (
             <div
               key={index}
