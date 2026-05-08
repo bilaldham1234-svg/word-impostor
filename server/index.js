@@ -20,13 +20,13 @@ io.on("connection", (socket) => {
 socket.on("createRoom", ({ roomId, name }) => {
 
   rooms[roomId] = {
-    players: [
-      {
-        id: socket.id,
-        name,
-      },
-    ],
-  };
+  players: [
+    {
+      id: socket.id,
+      name,
+    },
+  ],
+};
 
   socket.join(roomId);
 
