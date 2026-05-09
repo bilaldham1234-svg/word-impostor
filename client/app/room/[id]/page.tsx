@@ -35,9 +35,13 @@ export default function RoomPage() {
     };
   }, [roomId]);
 
+  // صاحب الغرفة الحقيقي
+  const ownerName = localStorage.getItem("playerName");
+
   const isOwner =
-    players.length > 0 &&
-    players[0]?.name === localStorage.getItem("playerName");
+    players.findIndex(
+      (player) => player.name === ownerName
+    ) === 0;
 
   return (
     <main className="min-h-screen bg-black text-white flex flex-col items-center justify-center overflow-hidden relative">
@@ -103,13 +107,13 @@ export default function RoomPage() {
               Choose Impostors
             </h2>
 
-            <div className="flex justify-center gap-4 mb-8">
+            <div className="flex justify-center gap-4 mb-8 flex-wrap">
 
               <button
                 onClick={() => setImpostorCount(1)}
-                className={`px-6 py-3 rounded-2xl font-bold ${
+                className={`px-6 py-3 rounded-2xl font-bold transition ${
                   impostorCount === 1
-                    ? "bg-purple-500"
+                    ? "bg-purple-500 shadow-[0_0_20px_#a855f7]"
                     : "bg-[#222]"
                 }`}
               >
@@ -119,9 +123,9 @@ export default function RoomPage() {
               {players.length >= 5 && (
                 <button
                   onClick={() => setImpostorCount(2)}
-                  className={`px-6 py-3 rounded-2xl font-bold ${
+                  className={`px-6 py-3 rounded-2xl font-bold transition ${
                     impostorCount === 2
-                      ? "bg-purple-500"
+                      ? "bg-purple-500 shadow-[0_0_20px_#a855f7]"
                       : "bg-[#222]"
                   }`}
                 >
@@ -132,9 +136,9 @@ export default function RoomPage() {
               {players.length >= 8 && (
                 <button
                   onClick={() => setImpostorCount(3)}
-                  className={`px-6 py-3 rounded-2xl font-bold ${
+                  className={`px-6 py-3 rounded-2xl font-bold transition ${
                     impostorCount === 3
-                      ? "bg-purple-500"
+                      ? "bg-purple-500 shadow-[0_0_20px_#a855f7]"
                       : "bg-[#222]"
                   }`}
                 >
@@ -151,7 +155,7 @@ export default function RoomPage() {
                   impostorCount,
                 })
               }
-              className="bg-purple-500 hover:bg-purple-600 px-10 py-5 rounded-3xl font-black text-2xl shadow-[0_0_30px_#a855f7]"
+              className="bg-purple-500 hover:bg-purple-600 px-10 py-5 rounded-3xl font-black text-2xl shadow-[0_0_30px_#a855f7] transition"
             >
               START GAME
             </button>
