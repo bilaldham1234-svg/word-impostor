@@ -16,7 +16,12 @@ export default function RoomPage() {
   const [isOwner, setIsOwner] = useState(false);
 
   useEffect(() => {
-    socket.emit("joinRoom", roomId);
+    const name = localStorage.getItem("playerName");
+
+socket.emit("joinRoom", {
+  roomId,
+  name,
+});
 
     socket.on("playersUpdate", (roomPlayers) => {
       setPlayers(roomPlayers);
