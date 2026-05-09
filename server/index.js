@@ -93,7 +93,7 @@ io.on("connection", (socket) => {
 
       if (!room) return;
 
-      // اختيار كلمة عشوائية
+      // اختيار كلمة
       const randomWord =
         words[
           Math.floor(Math.random() * words.length)
@@ -111,6 +111,11 @@ io.on("connection", (socket) => {
         .slice(0, impostorCount)
         .map((player) => player.id);
 
+      console.log(
+        "IMPOSTORS:",
+        room.impostors
+      );
+
       io.to(roomId).emit("gameStarted");
     }
   );
@@ -121,13 +126,14 @@ io.on("connection", (socket) => {
 
     if (!room) return;
 
+    // تحقق إذا اللاعب impostor
     const isImpostor =
       room.impostors.includes(socket.id);
 
     if (isImpostor) {
       socket.emit("roleData", {
         role: "impostor",
-        word: "",
+        word: "???",
       });
     } else {
       socket.emit("roleData", {
