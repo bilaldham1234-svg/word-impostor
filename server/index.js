@@ -1,8 +1,12 @@
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
+const cors = require("cors");
 
 const app = express();
+
+app.use(cors());
+
 const server = http.createServer(app);
 
 const io = new Server(server, {
@@ -14,29 +18,25 @@ const io = new Server(server, {
 const rooms = {};
 
 io.on("connection", (socket) => {
-  console.log("User connected:", socket.id);
+  console.log("User connected");
 
   // إنشاء غرفة
-socket.on("createRoom", ({ roomId, name }) => {
+  socket.on("createRoom", ({ roomId, name }) => {
+    rooms[roomId] = {
+      players: [],
+    };
 
-  rooms[roomId] = {
-  players: [
-    {
+    rooms[roomId].players.push({
       id: socket.id,
       name,
-    },
-  ],
-};
+    });
 
-  socket.join(roomId);
+    socket.join(roomId);
 
-  io.to(roomId).emit("roomUpdate", rooms[roomId]);
+    io.to(roomId).emit("playersUpdate", rooms[roomId].players);
 
-  socket.emit("roomCreated", roomId);
-
-  console.log("Room created:", roomId);
-
-});
+    socket.emit("roomCreated", roomId);
+  });
 
   // دخول غرفة
   socket.on("joinRoom", ({ roomId, name }) => {
@@ -46,7 +46,6 @@ socket.on("createRoom", ({ roomId, name }) => {
       };
     }
 
-    // منع التكرار
     const alreadyExists = rooms[roomId].players.find(
       (player) => player.id === socket.id
     );
@@ -60,28 +59,25 @@ socket.on("createRoom", ({ roomId, name }) => {
 
     socket.join(roomId);
 
-    io.to(roomId).emit("roomUpdate", rooms[roomId]);
-
-    socket.emit("joinedRoom", roomId);
-
-    console.log(name, "joined room", roomId);
+    io.to(roomId).emit("playersUpdate", rooms[roomId].players);
   });
-socket.on("startGame", (roomId) => {
-  io.to(roomId).emit("gameStarted");
-});
 
-socket.on("disconnect", () => {
-  // خروج لاعب
-  
+  // بدء اللعبة
+  socket.on("startGame", (roomId) => {
+    io.to(roomId).emit("gameStarted");
+  });
+
+  // خروج اللاعب
+  socket.on("disconnect", () => {
     for (const roomId in rooms) {
       rooms[roomId].players = rooms[roomId].players.filter(
         (player) => player.id !== socket.id
       );
 
-      io.to(roomId).emit("roomUpdate", rooms[roomId]);
+      io.to(roomId).emit("playersUpdate", rooms[roomId].players);
     }
 
-    console.log("User disconnected:", socket.id);
+    console.log("User disconnected");
   });
 });
 
