@@ -67,7 +67,7 @@ io.on("connection", (socket) => {
     }
 
     const alreadyExists = rooms[roomId].players.find(
-      (player) => player.id === socket.id
+      (player) => player.name === name
     );
 
     if (!alreadyExists) {
@@ -93,7 +93,7 @@ io.on("connection", (socket) => {
 
       if (!room) return;
 
-      // اختيار كلمة
+      // كلمة عشوائية
       const randomWord =
         words[
           Math.floor(Math.random() * words.length)
@@ -106,29 +106,23 @@ io.on("connection", (socket) => {
         () => 0.5 - Math.random()
       );
 
-      // اختيار impostors
+      // اختيار impostors بالأسماء
       room.impostors = shuffledPlayers
         .slice(0, impostorCount)
-        .map((player) => player.id);
-
-      console.log(
-        "IMPOSTORS:",
-        room.impostors
-      );
+        .map((player) => player.name);
 
       io.to(roomId).emit("gameStarted");
     }
   );
 
   // إرسال الدور
-  socket.on("getRole", ({ roomId }) => {
+  socket.on("getRole", ({ roomId, name }) => {
     const room = rooms[roomId];
 
     if (!room) return;
 
-    // تحقق إذا اللاعب impostor
     const isImpostor =
-      room.impostors.includes(socket.id);
+      room.impostors.includes(name);
 
     if (isImpostor) {
       socket.emit("roleData", {
@@ -143,20 +137,8 @@ io.on("connection", (socket) => {
     }
   });
 
-  // خروج اللاعب
+  // خروج لاعب
   socket.on("disconnect", () => {
-    for (const roomId in rooms) {
-      rooms[roomId].players =
-        rooms[roomId].players.filter(
-          (player) => player.id !== socket.id
-        );
-
-      io.to(roomId).emit(
-        "playersUpdate",
-        rooms[roomId].players
-      );
-    }
-
     console.log("User disconnected");
   });
 });
