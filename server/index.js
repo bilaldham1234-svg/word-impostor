@@ -17,6 +17,19 @@ const io = new Server(server, {
 
 const rooms = {};
 
+const words = [
+  "Apple",
+  "Banana",
+  "Pizza",
+  "Tiger",
+  "Football",
+  "Minecraft",
+  "Phone",
+  "Car",
+  "Burger",
+  "School",
+];
+
 io.on("connection", (socket) => {
   console.log("User connected");
 
@@ -24,6 +37,8 @@ io.on("connection", (socket) => {
   socket.on("createRoom", ({ roomId, name }) => {
     rooms[roomId] = {
       players: [],
+      impostors: [],
+      word: "",
     };
 
     rooms[roomId].players.push({
@@ -43,6 +58,8 @@ io.on("connection", (socket) => {
     if (!rooms[roomId]) {
       rooms[roomId] = {
         players: [],
+        impostors: [],
+        word: "",
       };
     }
 
@@ -64,17 +81,61 @@ io.on("connection", (socket) => {
 
   // بدء اللعبة
   socket.on("startGame", (roomId) => {
+    const room = rooms[roomId];
+
+    if (!room) return;
+
+    // اختيار كلمة عشوائية
+    const randomWord =
+      words[Math.floor(Math.random() * words.length)];
+
+    room.word = randomWord;
+
+    // اختيار impostor عشوائي
+    const randomPlayer =
+      room.players[
+        Math.floor(Math.random() * room.players.length)
+      ];
+
+    room.impostors = [randomPlayer.id];
+
     io.to(roomId).emit("gameStarted");
+  });
+
+  // إرسال الدور
+  socket.on("getRole", ({ roomId, name }) => {
+    const room = rooms[roomId];
+
+    if (!room) return;
+
+    const isImpostor =
+      room.impostors.includes(socket.id);
+
+    if (isImpostor) {
+      socket.emit("roleData", {
+        role: "impostor",
+        word: "",
+      });
+    } else {
+      socket.emit("roleData", {
+        role: "player",
+        word: room.word,
+      });
+    }
   });
 
   // خروج اللاعب
   socket.on("disconnect", () => {
     for (const roomId in rooms) {
-      rooms[roomId].players = rooms[roomId].players.filter(
-        (player) => player.id !== socket.id
-      );
+      rooms[roomId].players =
+        rooms[roomId].players.filter(
+          (player) => player.id !== socket.id
+        );
 
-      io.to(roomId).emit("playersUpdate", rooms[roomId].players);
+      io.to(roomId).emit(
+        "playersUpdate",
+        rooms[roomId].players
+      );
     }
 
     console.log("User disconnected");
