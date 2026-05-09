@@ -14,11 +14,8 @@ export default function GamePage() {
   const [word, setWord] = useState("");
 
   useEffect(() => {
-    const name = localStorage.getItem("playerName");
-
     socket.emit("getRole", {
       roomId,
-      name,
     });
 
     socket.on("roleData", (data) => {
