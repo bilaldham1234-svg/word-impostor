@@ -11,6 +11,7 @@ export default function RoomPage() {
   const roomId = params.id;
 
   const [players, setPlayers] = useState<any[]>([]);
+  const [impostorCount, setImpostorCount] = useState(1);
 
   useEffect(() => {
     const name = localStorage.getItem("playerName");
@@ -41,13 +42,10 @@ export default function RoomPage() {
   return (
     <main className="min-h-screen bg-black text-white flex flex-col items-center justify-center overflow-hidden relative">
 
-      {/* Background */}
-      <div className="absolute inset-0 bg-[url('/bg.jpg')] bg-cover bg-center opacity-30" />
-
       {/* Glow */}
-      <div className="absolute w-[700px] h-[700px] bg-purple-700 opacity-20 blur-[140px] rounded-full top-[20%]" />
+      <div className="absolute w-[700px] h-[700px] bg-purple-700 opacity-20 blur-[140px] rounded-full" />
 
-      <div className="z-10 w-full max-w-5xl px-6 text-center">
+      <div className="z-10 w-full max-w-6xl px-6 text-center">
 
         {/* Logo */}
         <h1 className="text-7xl font-black tracking-widest text-white drop-shadow-[0_0_35px_#c084fc]">
@@ -97,14 +95,68 @@ export default function RoomPage() {
 
         </div>
 
-        {/* Start Button */}
+        {/* Owner Controls */}
         {isOwner && (
-          <button
-            onClick={() => socket.emit("startGame", roomId)}
-            className="mt-12 bg-purple-500 hover:bg-purple-600 px-10 py-5 rounded-3xl font-black text-2xl shadow-[0_0_30px_#a855f7] transition"
-          >
-            START GAME
-          </button>
+          <div className="mt-12">
+
+            <h2 className="text-2xl font-bold mb-6">
+              Choose Impostors
+            </h2>
+
+            <div className="flex justify-center gap-4 mb-8">
+
+              <button
+                onClick={() => setImpostorCount(1)}
+                className={`px-6 py-3 rounded-2xl font-bold ${
+                  impostorCount === 1
+                    ? "bg-purple-500"
+                    : "bg-[#222]"
+                }`}
+              >
+                1 Impostor
+              </button>
+
+              {players.length >= 5 && (
+                <button
+                  onClick={() => setImpostorCount(2)}
+                  className={`px-6 py-3 rounded-2xl font-bold ${
+                    impostorCount === 2
+                      ? "bg-purple-500"
+                      : "bg-[#222]"
+                  }`}
+                >
+                  2 Impostors
+                </button>
+              )}
+
+              {players.length >= 8 && (
+                <button
+                  onClick={() => setImpostorCount(3)}
+                  className={`px-6 py-3 rounded-2xl font-bold ${
+                    impostorCount === 3
+                      ? "bg-purple-500"
+                      : "bg-[#222]"
+                  }`}
+                >
+                  3 Impostors
+                </button>
+              )}
+
+            </div>
+
+            <button
+              onClick={() =>
+                socket.emit("startGame", {
+                  roomId,
+                  impostorCount,
+                })
+              }
+              className="bg-purple-500 hover:bg-purple-600 px-10 py-5 rounded-3xl font-black text-2xl shadow-[0_0_30px_#a855f7]"
+            >
+              START GAME
+            </button>
+
+          </div>
         )}
 
       </div>
