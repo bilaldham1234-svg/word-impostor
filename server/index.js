@@ -36,6 +36,7 @@ io.on("connection", (socket) => {
   // إنشاء غرفة
   socket.on("createRoom", ({ roomId, name }) => {
     rooms[roomId] = {
+      owner: name,
       players: [],
       impostors: [],
       word: "",
@@ -53,18 +54,17 @@ io.on("connection", (socket) => {
       rooms[roomId].players
     );
 
+    io.to(roomId).emit(
+      "ownerUpdate",
+      rooms[roomId].owner
+    );
+
     socket.emit("roomCreated", roomId);
   });
 
   // دخول غرفة
   socket.on("joinRoom", ({ roomId, name }) => {
-    if (!rooms[roomId]) {
-      rooms[roomId] = {
-        players: [],
-        impostors: [],
-        word: "",
-      };
-    }
+    if (!rooms[roomId]) return;
 
     const alreadyExists = rooms[roomId].players.find(
       (player) => player.name === name
@@ -75,6 +75,8 @@ io.on("connection", (socket) => {
         id: socket.id,
         name,
       });
+    } else {
+      alreadyExists.id = socket.id;
     }
 
     socket.join(roomId);
@@ -82,6 +84,11 @@ io.on("connection", (socket) => {
     io.to(roomId).emit(
       "playersUpdate",
       rooms[roomId].players
+    );
+
+    io.to(roomId).emit(
+      "ownerUpdate",
+      rooms[roomId].owner
     );
   });
 
@@ -93,7 +100,6 @@ io.on("connection", (socket) => {
 
       if (!room) return;
 
-      // كلمة عشوائية
       const randomWord =
         words[
           Math.floor(Math.random() * words.length)
@@ -101,12 +107,10 @@ io.on("connection", (socket) => {
 
       room.word = randomWord;
 
-      // خلط اللاعبين
       const shuffledPlayers = [...room.players].sort(
         () => 0.5 - Math.random()
       );
 
-      // اختيار impostors بالأسماء
       room.impostors = shuffledPlayers
         .slice(0, impostorCount)
         .map((player) => player.name);
@@ -115,7 +119,7 @@ io.on("connection", (socket) => {
     }
   );
 
-  // إرسال الدور
+  // إعطاء الدور
   socket.on("getRole", ({ roomId, name }) => {
     const room = rooms[roomId];
 
@@ -139,6 +143,24 @@ io.on("connection", (socket) => {
 
   // خروج لاعب
   socket.on("disconnect", () => {
+    for (const roomId in rooms) {
+      const room = rooms[roomId];
+
+      room.players = room.players.filter(
+        (player) => player.id !== socket.id
+      );
+
+      io.to(roomId).emit(
+        "playersUpdate",
+        room.players
+      );
+
+      io.to(roomId).emit(
+        "ownerUpdate",
+        room.owner
+      );
+    }
+
     console.log("User disconnected");
   });
 });
