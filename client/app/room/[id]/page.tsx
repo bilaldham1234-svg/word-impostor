@@ -11,24 +11,29 @@ export default function RoomPage() {
   const roomId = params.id;
 
   const [players, setPlayers] = useState<any[]>([]);
-  const [impostorCount, setImpostorCount] = useState(1);
-  const [ownerId, setOwnerId] = useState("");
+  const [owner, setOwner] = useState("");
+  const [impostorCount, setImpostorCount] =
+    useState(1);
 
   useEffect(() => {
-    const name = localStorage.getItem("playerName");
+    const name =
+      localStorage.getItem("playerName");
+
+    const playerId =
+      localStorage.getItem("playerId");
 
     socket.emit("joinRoom", {
       roomId,
       name,
+      playerId,
     });
 
     socket.on("playersUpdate", (roomPlayers) => {
       setPlayers(roomPlayers);
+    });
 
-      // أول لاعب هو owner
-      if (roomPlayers.length > 0) {
-        setOwnerId(roomPlayers[0].id);
-      }
+    socket.on("ownerUpdate", (ownerId) => {
+      setOwner(ownerId);
     });
 
     socket.on("gameStarted", () => {
@@ -37,11 +42,14 @@ export default function RoomPage() {
 
     return () => {
       socket.off("playersUpdate");
+      socket.off("ownerUpdate");
       socket.off("gameStarted");
     };
   }, [roomId]);
 
-  const isOwner = socket.id === ownerId;
+  const isOwner =
+    owner ===
+    localStorage.getItem("playerId");
 
   return (
     <main className="min-h-screen bg-black text-white flex flex-col items-center justify-center overflow-hidden relative">
@@ -51,6 +59,7 @@ export default function RoomPage() {
 
       <div className="z-10 w-full max-w-6xl px-6 text-center">
 
+        {/* Logo */}
         <h1 className="text-7xl font-black tracking-widest text-white drop-shadow-[0_0_35px_#c084fc]">
           WORD
           <span className="block text-purple-300">
@@ -109,7 +118,9 @@ export default function RoomPage() {
             <div className="flex justify-center gap-4 mb-8 flex-wrap">
 
               <button
-                onClick={() => setImpostorCount(1)}
+                onClick={() =>
+                  setImpostorCount(1)
+                }
                 className={`px-6 py-3 rounded-2xl font-bold ${
                   impostorCount === 1
                     ? "bg-purple-500"
@@ -121,7 +132,9 @@ export default function RoomPage() {
 
               {players.length >= 5 && (
                 <button
-                  onClick={() => setImpostorCount(2)}
+                  onClick={() =>
+                    setImpostorCount(2)
+                  }
                   className={`px-6 py-3 rounded-2xl font-bold ${
                     impostorCount === 2
                       ? "bg-purple-500"
@@ -134,7 +147,9 @@ export default function RoomPage() {
 
               {players.length >= 8 && (
                 <button
-                  onClick={() => setImpostorCount(3)}
+                  onClick={() =>
+                    setImpostorCount(3)
+                  }
                   className={`px-6 py-3 rounded-2xl font-bold ${
                     impostorCount === 3
                       ? "bg-purple-500"
