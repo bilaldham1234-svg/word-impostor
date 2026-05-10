@@ -31,80 +31,72 @@ const words = [
 ];
 
 io.on("connection", (socket) => {
-  console.log("User connected");
+  console.log("User connected:", socket.id);
 
   // إنشاء غرفة
-  socket.on(
-    "createRoom",
-    ({ roomId, name, playerId }) => {
-      rooms[roomId] = {
-        owner: playerId,
-        players: [],
-        impostors: [],
-        word: "",
-      };
+  socket.on("createRoom", ({ roomId, name }) => {
+    rooms[roomId] = {
+      owner: socket.id,
+      players: [],
+      impostors: [],
+      word: "",
+    };
 
-      rooms[roomId].players.push({
-        socketId: socket.id,
-        playerId,
-        name,
-      });
+    rooms[roomId].players.push({
+      id: socket.id,
+      name,
+    });
 
-      socket.join(roomId);
+    socket.join(roomId);
 
-      io.to(roomId).emit(
-        "playersUpdate",
-        rooms[roomId].players
-      );
+    io.to(roomId).emit(
+      "playersUpdate",
+      rooms[roomId].players
+    );
 
-      io.to(roomId).emit(
-        "ownerUpdate",
-        rooms[roomId].owner
-      );
+    io.to(roomId).emit(
+      "ownerUpdate",
+      rooms[roomId].owner
+    );
 
-      socket.emit("roomCreated", roomId);
-    }
-  );
+    socket.emit("roomCreated", roomId);
+
+    console.log("Room created:", roomId);
+  });
 
   // دخول غرفة
-  socket.on(
-    "joinRoom",
-    ({ roomId, name, playerId }) => {
-      const room = rooms[roomId];
+  socket.on("joinRoom", ({ roomId, name }) => {
+    const room = rooms[roomId];
 
-      if (!room) return;
+    if (!room) return;
 
-      const existingPlayer =
-        room.players.find(
-          (player) =>
-            player.playerId === playerId
-        );
+    const alreadyExists = room.players.find(
+      (player) => player.name === name
+    );
 
-      if (existingPlayer) {
-        // تحديث socket عند refresh
-        existingPlayer.socketId = socket.id;
-        existingPlayer.name = name;
-      } else {
-        room.players.push({
-          socketId: socket.id,
-          playerId,
-          name,
-        });
-      }
-
-      socket.join(roomId);
-
-      io.to(roomId).emit(
-        "playersUpdate",
-        room.players
-      );
-
-      io.to(roomId).emit(
-        "ownerUpdate",
-        room.owner
-      );
+    if (!alreadyExists) {
+      room.players.push({
+        id: socket.id,
+        name,
+      });
+    } else {
+      alreadyExists.id = socket.id;
     }
-  );
+
+    socket.join(roomId);
+
+    io.to(roomId).emit(
+      "playersUpdate",
+      room.players
+    );
+
+    io.to(roomId).emit(
+      "ownerUpdate",
+      room.owner
+    );
+
+    console.log(name, "joined", roomId);
+  });
 
   // بدء اللعبة
   socket.on(
@@ -114,7 +106,6 @@ io.on("connection", (socket) => {
 
       if (!room) return;
 
-      // اختيار كلمة
       const randomWord =
         words[
           Math.floor(Math.random() * words.length)
@@ -122,69 +113,66 @@ io.on("connection", (socket) => {
 
       room.word = randomWord;
 
-      // خلط اللاعبين
       const shuffledPlayers = [...room.players].sort(
         () => 0.5 - Math.random()
       );
 
-      // اختيار impostors
       room.impostors = shuffledPlayers
         .slice(0, impostorCount)
-        .map((player) => player.playerId);
+        .map((player) => player.name);
 
       io.to(roomId).emit("gameStarted");
+
+      console.log(
+        "Game started in room:",
+        roomId
+      );
+
+      console.log(
+        "Impostors:",
+        room.impostors
+      );
     }
   );
 
   // إعطاء الدور
-  socket.on(
-    "getRole",
-    ({ roomId, playerId }) => {
-      const room = rooms[roomId];
+  socket.on("getRole", ({ roomId, name }) => {
+    const room = rooms[roomId];
 
-      if (!room) return;
+    if (!room) return;
 
-      const isImpostor =
-        room.impostors.includes(playerId);
+    const isImpostor =
+      room.impostors.includes(name);
 
-      if (isImpostor) {
-        socket.emit("roleData", {
-          role: "impostor",
-          word: "???",
-        });
-      } else {
-        socket.emit("roleData", {
-          role: "player",
-          word: room.word,
-        });
-      }
+    if (isImpostor) {
+      socket.emit("roleData", {
+        role: "impostor",
+        word: "???",
+      });
+    } else {
+      socket.emit("roleData", {
+        role: "player",
+        word: room.word,
+      });
     }
-  );
+  });
 
   // خروج لاعب
   socket.on("disconnect", () => {
+    console.log("User disconnected:", socket.id);
+
     for (const roomId in rooms) {
       const room = rooms[roomId];
 
       room.players = room.players.filter(
-        (player) =>
-          player.socketId !== socket.id
+        (player) => player.id !== socket.id
       );
 
-      // إذا الغرفة فاضية احذفها
-      if (room.players.length === 0) {
-        delete rooms[roomId];
-        continue;
-      }
-
-      // إذا الهوست طلع
-      if (
-        !room.players.find(
-          (p) => p.playerId === room.owner
-        )
-      ) {
-        room.owner =
-          room.players[0].playerId;
+      // نقل الهوست
+      if (room.owner === socket.id) {
+        if (room.players.length > 0) {
+          room.owner = room.players[0].id;
+        }
       }
 
       io.to(roomId).emit(
@@ -196,12 +184,23 @@ io.on("connection", (socket) => {
         "ownerUpdate",
         room.owner
       );
-    }
 
-    console.log("User disconnected");
+      // حذف الغرفة إذا فاضية
+      if (room.players.length === 0) {
+        delete rooms[roomId];
+      }
+    }
   });
 });
 
-server.listen(3001, () => {
-  console.log("Server running on port 3001");
+app.get("/", (req, res) => {
+  res.send("Server is running");
+});
+
+const PORT = process.env.PORT || 3001;
+
+server.listen(PORT, () => {
+  console.log(
+    "Server running on port " + PORT
+  );
 });
