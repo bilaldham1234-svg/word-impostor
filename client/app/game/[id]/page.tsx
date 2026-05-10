@@ -14,11 +14,12 @@ export default function GamePage() {
   const [word, setWord] = useState("");
 
   useEffect(() => {
-    const name = localStorage.getItem("playerName");
+    const playerId =
+      localStorage.getItem("playerId");
 
     socket.emit("getRole", {
       roomId,
-      name,
+      playerId,
     });
 
     socket.on("roleData", (data) => {
@@ -56,7 +57,7 @@ export default function GamePage() {
                 YOU ARE
               </h2>
 
-              <h3 className="text-7xl font-black mt-4 text-red-500 drop-shadow-[0_0_20px_red]">
+              <h3 className="text-7xl font-black mt-4 text-red-500">
                 IMPOSTOR
               </h3>
 
@@ -74,7 +75,7 @@ export default function GamePage() {
                 YOUR WORD
               </h2>
 
-              <h3 className="text-7xl font-black mt-6 text-purple-300 drop-shadow-[0_0_20px_#c084fc]">
+              <h3 className="text-7xl font-black mt-6 text-purple-300">
                 {word}
               </h3>
 

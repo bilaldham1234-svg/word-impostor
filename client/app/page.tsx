@@ -10,70 +10,132 @@ export default function Home() {
   const socketRef = useRef<any>(null);
 
   useEffect(() => {
-    socketRef.current = io("https://word-impostor-server.onrender.com");
+    socketRef.current = io(
+      "https://word-impostor-server.onrender.com"
+    );
+
+    // إنشاء playerId ثابت
+    let playerId =
+      localStorage.getItem("playerId");
+
+    if (!playerId) {
+      playerId = crypto.randomUUID();
+
+      localStorage.setItem(
+        "playerId",
+        playerId
+      );
+    }
   }, []);
 
+  // إنشاء غرفة
   const createRoom = () => {
     if (!name) return;
 
-    const id = Math.floor(10000 + Math.random() * 90000).toString();
+    const roomId = Math.floor(
+      10000 + Math.random() * 90000
+    ).toString();
 
-    localStorage.setItem("playerName", name);
+    const playerId =
+      localStorage.getItem("playerId");
+
+    localStorage.setItem(
+      "playerName",
+      name
+    );
 
     socketRef.current.emit("createRoom", {
-      roomId: id,
+      roomId,
       name,
+      playerId,
     });
 
-    socketRef.current.on("roomCreated", (room: string) => {
-      window.location.href = `/room/${room}`;
-    });
+    socketRef.current.on(
+      "roomCreated",
+      (room: string) => {
+        window.location.href = `/room/${room}`;
+      }
+    );
   };
 
+  // دخول غرفة
   const joinRoom = () => {
     if (!name || !joinCode) return;
 
-    localStorage.setItem("playerName", name);
+    const playerId =
+      localStorage.getItem("playerId");
+
+    localStorage.setItem(
+      "playerName",
+      name
+    );
+
+    socketRef.current.emit("joinRoom", {
+      roomId: joinCode,
+      name,
+      playerId,
+    });
 
     window.location.href = `/room/${joinCode}`;
   };
 
   return (
-    <main className="min-h-screen bg-[#0b0b16] flex items-center justify-center px-6">
-      <div className="w-full max-w-md bg-[#1a1a2e] p-8 rounded-3xl shadow-[0_0_40px_#8b5cf6]">
-        <h1 className="text-5xl font-bold text-center mb-8 text-purple-300">
-          🎮 Word Impostor
+    <main className="min-h-screen bg-black text-white flex items-center justify-center relative overflow-hidden">
+
+      {/* Glow */}
+      <div className="absolute w-[700px] h-[700px] bg-purple-700 opacity-20 blur-[140px] rounded-full" />
+
+      <div className="z-10 bg-[#111] border border-purple-500 rounded-3xl p-10 w-full max-w-md shadow-[0_0_40px_#a855f7]">
+
+        {/* Logo */}
+        <h1 className="text-6xl font-black text-center tracking-widest text-white drop-shadow-[0_0_30px_#c084fc]">
+          WORD
+          <span className="block text-purple-300">
+            IMPOSTOR
+          </span>
         </h1>
 
+        <p className="text-center text-gray-400 mt-4 mb-10">
+          Multiplayer Party Game 😈
+        </p>
+
+        {/* Name Input */}
         <input
           type="text"
           placeholder="Enter your name"
           value={name}
-          onChange={(e) => setName(e.target.value)}
-          className="w-full p-4 rounded-xl bg-[#111] text-white mb-4 outline-none"
+          onChange={(e) =>
+            setName(e.target.value)
+          }
+          className="w-full bg-black border border-purple-500 rounded-2xl px-5 py-4 mb-5 outline-none text-white"
         />
 
+        {/* Join Code */}
         <input
           type="text"
           placeholder="Enter room code"
           value={joinCode}
-          onChange={(e) => setJoinCode(e.target.value)}
-          className="w-full p-4 rounded-xl bg-[#111] text-white mb-6 outline-none"
+          onChange={(e) =>
+            setJoinCode(e.target.value)
+          }
+          className="w-full bg-black border border-purple-500 rounded-2xl px-5 py-4 mb-8 outline-none text-white"
         />
 
+        {/* Buttons */}
         <button
           onClick={createRoom}
-          className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-4 rounded-xl mb-4"
+          className="w-full bg-purple-500 hover:bg-purple-600 transition py-4 rounded-2xl font-black text-xl mb-4 shadow-[0_0_25px_#a855f7]"
         >
-          Create Room
+          CREATE ROOM
         </button>
 
         <button
           onClick={joinRoom}
-          className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 rounded-xl"
+          className="w-full bg-[#222] hover:bg-[#333] transition py-4 rounded-2xl font-black text-xl border border-purple-500"
         >
-          Join Room
+          JOIN ROOM
         </button>
+
       </div>
     </main>
   );
