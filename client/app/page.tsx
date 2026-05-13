@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { io } from "socket.io-client";
 
-const socket = io("https://word-impostor-server.onrender.com");
+const socket = io("https://word-impostor-msem.onrender.com");
 
 export default function Home() {
   const [name, setName] = useState("");
