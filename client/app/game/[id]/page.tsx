@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { io } from "socket.io-client";
 
-const socket = io("https://word-impostor-server.onrender.com");
+const socket = io("https://word-impostor-msem.onrender.com");
 export default function GamePage() {
   const params = useParams();
   const roomId = params.id;
